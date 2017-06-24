@@ -33,6 +33,7 @@ class InstantPrintTool(QgsMapTool):
         self.dialogui.setupUi(self.dialog)
         self.exportButton = self.dialogui.buttonBox.addButton(self.tr("Export"), QDialogButtonBox.ActionRole)
         self.helpButton = self.dialogui.buttonBox.addButton(self.tr("Help"), QDialogButtonBox.HelpRole)
+        self.dialogui.comboBox_fileformat.addItem("Printer", self.tr("printer;;"))
         self.dialogui.comboBox_fileformat.addItem("PDF", self.tr("PDF Document (*.pdf);;"))
         self.dialogui.comboBox_fileformat.addItem("JPG", self.tr("JPG Image (*.jpg);;"))
         self.dialogui.comboBox_fileformat.addItem("BMP", self.tr("BMP Image (*.bmp);;"))
@@ -192,6 +193,34 @@ class InstantPrintTool(QgsMapTool):
     def __export(self):
         settings = QSettings()
         format = self.dialogui.comboBox_fileformat.itemData(self.dialogui.comboBox_fileformat.currentIndex())
+        
+        #QMessageBox.warning(self.iface.mainWindow(), self.tr("Selected"), format)
+        
+        if format.lower() == u"printer;;":
+            printer = QPrinter(QPrinter.HighResolution)
+            #printer.setPageSize(self.composerView.composition().
+            painter = QPainter()
+            
+            printdialog =  QPrintDialog(printer, self.iface.mainWindow())
+            
+            #if self.composerView.composition().==QgsComposition::Portrait :
+            #       printer.setOrientation(QPrinter::Portrait)
+            # else:
+            #       printer.setOrientation(QPrinter::Landscape)                   
+                   
+                   
+            if printdialog.exec_():
+            
+                   QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+                   self.composerView.composition().beginPrint(printer)
+                   painter.begin(printer)
+                   self.composerView.composition().doPrint(printer, painter)
+                   painter.end()
+                   QApplication.restoreOverrideCursor()
+                   
+            return
+            
+        
         filename = QFileDialog.getSaveFileName(
             self.iface.mainWindow(),
             self.tr("Print Composition"),
